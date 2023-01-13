@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Cashfree Drops</title>
+  </head>
+  <body>
+    <div id="payment-form"></div>
+    <button id="pay-btn">Pay</button>
+      
+    <script src="https://sdk.cashfree.com/js/ui/2.0.0/cashfree.sandbox.js"></script>
+    <script>
+
+let paymentSessionId = "session_USfrP0XH9sq7twbzLElHOIxrNmxs-Eyb3U9lPDv_VxZWv11--H2axEOtZ6jNjMNfJSgsAXC9wQgeQBJ4dqzEBaC9XqYTGEa7JzX4J2aHawCD";
+const paymentDom = document.getElementById("payment-form");
+const success = function(data) {
+    if (data.order && data.order.status == "PAID") {
+        $.ajax({
+            url: "checkstatus.php?order_id=" + data.order.orderId,
+            success: function(result) {
+                if (result.order_status == "PAID") {
+                    alert("Order PAID");
+                }
+            },
+        });
+    } else {
+        //order is still active
+        alert("Order is ACTIVE")
+    }
+}
+let failure = function(data) {
+    alert(data.order.errorText)
+}
+document.getElementById("pay-btn").addEventListener("click", () => {
+    const dropConfig = {
+        "components": [
+            "order-details",
+            "card",
+            "netbanking",
+            "app",
+            "upi"
+        ],
+        "onSuccess": success,
+        "onFailure": failure,
+        "style": {
+            "backgroundColor": "#ffffff",
+            "color": "#11385b",
+            "fontFamily": "Lato",
+            "fontSize": "14px",
+            "errorColor": "#ff0000",
+            "theme": "light", //(or dark)
+        }
+    }
+    if (paymentSessionId == "") {
+       alert(sdf);
+        $.ajax({
+            
+            url: "fetchtoken.php",
+            success: function(result) {
+                paymentSessionId = result["session_n6Ih8rWYCdAR074yrNts4uV0yr6UtgKL0SsStYc3FyaUGHtWazzZyrYRvo5wGeK_OlDy03pg82_6Hq5CwPDySphp75kH-8JVSWP29pzwE3N3"];
+                const cashfree = new Cashfree(paymentSessionId);
+                cashfree.drop(paymentDom, dropConfig);
+            },
+        });
+    } else {
+        const cashfree = new Cashfree(paymentSessionId);
+        cashfree.drop(paymentDom, dropConfig);
+    }
+
+})
+    </script>
+  </body>
+</html>
